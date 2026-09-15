@@ -156,7 +156,7 @@ export const copy = {
     saved: "Your profile is saved.",
     connections: "Connections",
     connectionsSub:
-      "Credentials are read from your server’s .env file and never sent to your browser.",
+      "OpenAI and Telnyx credentials stay on the server. Maps uses a separate browser key restricted to this site.",
     configured: "Configured",
     missing: "Not configured",
     ready: "Ready for real calls",
@@ -345,7 +345,7 @@ export const copy = {
     saved: "Tu perfil se ha guardado.",
     connections: "Conexiones",
     connectionsSub:
-      "Las credenciales se leen del archivo .env del servidor y nunca se envían al navegador.",
+      "Las credenciales de OpenAI y Telnyx permanecen en el servidor. Maps usa una clave de navegador separada y restringida a este sitio.",
     configured: "Configurado",
     missing: "Sin configurar",
     ready: "Todo listo para llamar",

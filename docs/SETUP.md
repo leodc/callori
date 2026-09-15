@@ -1,6 +1,6 @@
 # Run Callori locally
 
-Callori is a single-user local application. No accounts or billing are required. Practice mode works immediately without provider credentials. Real calling uses your own OpenAI and Telnyx accounts.
+Callori is a single-user local application. No accounts or billing are required. You can prepare a request without provider credentials; practice mode has been removed. Real calling uses your own OpenAI and Telnyx accounts.
 
 ## 1. Start the application
 

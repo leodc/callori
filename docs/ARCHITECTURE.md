@@ -95,3 +95,7 @@ Cancelled model responses do not execute tool output, queued work rechecks termi
 SQLite uses WAL, a five-second busy timeout and FULL synchronous mode. The additive `provider_calls.hangup_id` migration runs automatically. The online backup script validates integrity and refuses overwrite. See [OPERATIONS](OPERATIONS.md) for deployment/restore procedures and [FINDINGS](FINDINGS.md) for failure modes that remain unresolved by local guarantees.
 
 Additional official references: [Telnyx command retries](https://developers.telnyx.com/docs/voice/programmable-voice/command-retries), [Telnyx call-status endpoint](https://github.com/team-telnyx/knowledge-base/blob/main/wiki/dev-docs/telnyx-voice-api-and-sip-trunking--part-1.md), and [Node SQLite backup API](https://nodejs.org/api/sqlite.html#sqlitebackupsourceDb-path-options).
+
+## Business discovery
+
+`lib/discovery.ts` defines controlled destination search terms and geography. `components/business-finder.tsx` loads Google Maps on demand, searches Places and returns a selected business to the wizard. `lib/google-maps.ts` handles the SDK loader, field masks and country/phone normalization. Google requests run in the browser with a restricted browser key; the authenticated voice API exposes only that public configuration and persists contact Place IDs. Search coordinates and result directories are not stored. See [Google Maps](GOOGLE_MAPS.md) for data handling and project configuration.

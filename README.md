@@ -16,6 +16,8 @@ The guided flow asks for the contact, phone number and spoken language. Appointm
 
 **Calling destinations: Japan only for now.** The country menu defaults to Japan (+81). Enter a local number such as `070-1234-5678`, or paste its international form; Callori formats it and previews `+81 70 1234 5678` before dialing. The API also enforces the controlled country list. `ALLOWED_PHONE_NUMBERS=*` allows valid numbers only within enabled countries. Spoken language is independent of destination.
 
+**Find a place:** open a map that already knows the service from your request. Callori asks for browser location permission and searches nearby automatically when granted; floating controls let you search another city, neighborhood or station. Numbered pins match the results, and place details let you continue the call request or save a contact. The map requires a Google Maps browser key. If unavailable, the request still supports entering a phone number manually. See [Google Maps setup and data handling](docs/GOOGLE_MAPS.md).
+
 During the call, the user sees status and a translated transcript, can inspect the original text, answer requests for information/approval, and hang up. Answers resume the same phone call and OpenAI session. The final outcome and transcript remain in history and can be exported.
 
 The interface supports **English and Spanish**; the voice agent supports **Japanese, English and Spanish**. Profile sharing is optional per call. Identification uses all given names and surnames; a preferred nickname never substitutes for the full name. New calls are live only. Historical practice records remain clearly labeled; scripted practice generation has been removed.
@@ -77,7 +79,7 @@ Telephone ↔ Telnyx ↔ bidirectional PCMU audio ↔ OpenAI Realtime
                                   ask user → UI answer → same call
 ```
 
-The architecture uses Next.js App Router, React, TypeScript, a small Node voice service and local SQLite. Credentials remain server-side. Display translations use a separate structured OpenAI request and never enter the voice conversation.
+The architecture uses Next.js App Router, React, TypeScript, a small Node voice service and local SQLite. OpenAI/Telnyx credentials remain server-side; optional Maps discovery uses a separate restricted browser key. Display translations use a separate structured OpenAI request and never enter the voice conversation.
 
 Implemented safeguards include local Host/origin checks, a private internal service token, signed/replay-checked webhooks, per-call media tokens, bounded request bodies and audio queues, one active call, dialing throttling, idempotency, provider-enforced call duration, durable hangup recovery and a 90-second user-answer timeout. The default call cap is 600 seconds, configurable within 30–1200 seconds.
 
@@ -91,7 +93,7 @@ No audio files are recorded by Callori. Transcripts/profile data remain on disk 
 - `GET http://127.0.0.1:3001/healthz`: process health only; it does not validate provider access.
 - GitHub Actions runs checks and a production dependency audit with read-only repository permissions. No deployment or provider credentials are required.
 
-The current verification includes 27 automated tests, an isolated server smoke test, production compilation, browser checks and a dependency audit with no reported vulnerabilities on September 15. Real phone connectivity has been exercised by the user. Audio quality, adversarial conversations and all carrier failure modes are not comprehensively certified. See [verification](docs/VERIFICATION.md) for the evidence and limits.
+The current verification includes 33 automated tests, an isolated server smoke test, production compilation, browser checks and a dependency audit with no reported vulnerabilities on September 15. Real phone connectivity has been exercised by the user. Audio quality, adversarial conversations and all carrier failure modes are not comprehensively certified. See [verification](docs/VERIFICATION.md) for the evidence and limits.
 
 ## Findings, challenges and next steps
 
@@ -103,6 +105,7 @@ Immediate follow-up work is a repeatable real-call acceptance suite, transcript 
 
 ## Documentation
 
+- [Business discovery and Google Maps](docs/GOOGLE_MAPS.md)
 - [Documentation index](docs/README.md)
 - [Setup and provider configuration](docs/SETUP.md)
 - [Architecture and Vercel migration](docs/ARCHITECTURE.md)

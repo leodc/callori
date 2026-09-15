@@ -14,6 +14,7 @@ export type CallPlan = {
   reason: string;
   patient: string;
   business: string;
+  businessAddress: string;
   phone: string;
   country: CallingCountry;
   language: CallInput["language"];
@@ -66,6 +67,7 @@ export function newPlan(purpose: Purpose = "appointment"): CallPlan {
     reason: "",
     patient: "",
     business: "",
+    businessAddress: "",
     phone: "",
     country: defaultCallingCountry,
     language: "ja",
@@ -97,6 +99,8 @@ export function buildCallInput(plan: CallPlan, locale: Locale): CallInput {
         : `${purposeLabels[locale][plan.purpose]}: ${plan.reason.trim()}`;
   const context = [
     plan.business.trim() && `Business/recipient: ${plan.business.trim()}`,
+    plan.businessAddress.trim() &&
+      `Business address: ${plan.businessAddress.trim()}`,
     plan.purpose === "appointment" &&
       plan.patient &&
       `Existing patient/customer: ${plan.patient}`,

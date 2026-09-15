@@ -155,3 +155,28 @@ test("rejects oversized chunked bodies before buffering the entire upload", asyn
   assert.equal(cancelled, true);
   assert.ok(reads <= 6);
 });
+
+test("discovery API routes preserve local access guards and the internal token", async () => {
+  globalThis.fetch = async (url, init) => {
+    assert.match(String(url), /\/(maps-config|contacts(?:\/remove)?)$/);
+    assert.match(
+      new Headers(init?.headers).get("authorization") || "",
+      /^Bearer /,
+    );
+    return Response.json([]);
+  };
+  for (const path of [["maps-config"], ["contacts"], ["contacts", "remove"]]) {
+    assert.equal(
+      (await GET(request("GET"), { params: Promise.resolve({ path }) })).status,
+      200,
+    );
+    assert.equal(
+      (
+        await GET(request("GET", { host: "evil.test" }), {
+          params: Promise.resolve({ path }),
+        })
+      ).status,
+      403,
+    );
+  }
+});

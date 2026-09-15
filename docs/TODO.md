@@ -2,6 +2,12 @@
 
 The current release is a private, single-user production foundation. These are explicit follow-ups, not features silently assumed to be implemented.
 
+## Google Maps activation
+
+- [x] Configure the browser key and verify real map tiles and Places search locally (2026-09-16: ten results near Shinjuku Station).
+- [ ] Audit API/referrer restrictions in Google Cloud and verify saved-contact detail refresh against the live project.
+- [ ] Before public hosting, configure a production map ID, quota/budget limits and operator terms/privacy documents; verify applicable Google regional terms.
+
 ## P0 — before changing the deployment boundary or claiming broad voice acceptance
 
 - [ ] Run and document a repeatable real-call acceptance set: Japanese/English/Spanish, full names, missing data, denied approval, silence/90-second timeout, interruption, manual/remote hangup, provider outage, and speakerphone/headset comparison. **Done when:** results identify carrier/device/model and all critical cases pass or have documented mitigations.

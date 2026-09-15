@@ -7,7 +7,12 @@ import {
 import { WebSocketServer } from "ws";
 import { z } from "zod";
 import { internalToken } from "../lib/internal-token";
-import { answerSchema, callSchema, profileSchema } from "../lib/validation";
+import {
+  answerSchema,
+  callSchema,
+  profileSchema,
+  contactSchema,
+} from "../lib/validation";
 import { terminal } from "../lib/types";
 import {
   answerUser,
@@ -31,6 +36,9 @@ import {
   saveControl,
   getControl,
   pendingControls,
+  contacts,
+  saveContact,
+  removeContact,
 } from "./store";
 import { readiness, safeEqual, verifyWebhook } from "./security";
 const token = internalToken();
@@ -138,6 +146,26 @@ const server = createServer(async (req, res) => {
           };
         })(),
       });
+    if (req.method === "GET" && url.pathname === "/maps-config")
+      return json(res, 200, {
+        key: process.env.GOOGLE_MAPS_BROWSER_KEY || "",
+        mapId: process.env.GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID",
+      });
+    if (req.method === "GET" && url.pathname === "/contacts")
+      return json(res, 200, contacts());
+    if (
+      req.method === "POST" &&
+      ["/contacts", "/contacts/remove"].includes(url.pathname)
+    ) {
+      const input = contactSchema.parse(JSON.parse(await body(req)));
+      return json(
+        res,
+        200,
+        url.pathname === "/contacts"
+          ? saveContact(input.placeId, input.country)
+          : removeContact(input.placeId),
+      );
+    }
     if (req.method === "PUT" && url.pathname === "/profile")
       return json(
         res,
@@ -191,6 +219,7 @@ const server = createServer(async (req, res) => {
       "BODY_TOO_LARGE",
       "RECOVERY_PENDING",
       "INVALID_INPUT",
+      "CONTACT_LIMIT",
     ];
     json(
       res,

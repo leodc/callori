@@ -7,6 +7,11 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { searchTerm, type Business } from "@/lib/discovery";
+const BusinessFinder = dynamic(() => import("./business-finder"), {
+  ssr: false,
+});
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -17,6 +22,8 @@ import {
   CircleHelp,
   LoaderCircle,
   Phone,
+  MapPin,
+  Search,
   PhoneCall,
   Plus,
   ShieldCheck,
@@ -90,6 +97,8 @@ export default function CallWizard({
   const [plan, setPlan] = useState(() => newPlan(initial));
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [finderOpen, setFinderOpen] = useState(false);
+  const [chosenBusiness, setChosenBusiness] = useState<Business>();
   const [error, setError] = useState("");
   const [consent, setConsent] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
@@ -138,12 +147,21 @@ export default function CallWizard({
     setConsent(false);
     setError("");
   }
+  function chooseBusiness(business: Business) {
+    change("business", business.name.slice(0, 200));
+    change("phone", business.phone);
+    change("businessAddress", business.address);
+    setChosenBusiness(business);
+    setFinderOpen(false);
+    setPhoneTouched(false);
+  }
   function selectPurpose(purpose: Purpose) {
     setPlan((p) => ({
       ...newPlan(purpose),
       phone: p.phone,
       country: p.country,
       business: p.business,
+      businessAddress: p.businessAddress,
       language: p.language,
       shareProfile: p.shareProfile,
     }));
@@ -296,6 +314,25 @@ export default function CallWizard({
           <fieldset className="wizard-fields" disabled={busy}>
             {step === 0 && (
               <>
+                <Field label={say("Calling country", "País al que llamamos")}>
+                  <select
+                    value={plan.country}
+                    onChange={(e) => {
+                      change("country", e.target.value as CallingCountry);
+                      change("phone", "");
+                      change("business", "");
+                      change("businessAddress", "");
+                      setChosenBusiness(undefined);
+                      setPhoneTouched(false);
+                    }}
+                  >
+                    {callingCountries.map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.name[l]} ({item.prefix})
+                      </option>
+                    ))}
+                  </select>
+                </Field>
                 <Field label={say("Type of call", "Tipo de llamada")}>
                   <select
                     value={plan.purpose}
@@ -520,8 +557,73 @@ export default function CallWizard({
                 )}
               </>
             )}
+            {step === 0 &&
+              (plan.purpose !== "appointment" || plan.category) && (
+                <div className="discovery-invitation">
+                  <span className="discovery-icon">
+                    <MapPin size={24} />
+                  </span>
+                  <div>
+                    <h3>
+                      {chosenBusiness
+                        ? say(
+                            "A place for your call",
+                            "Un lugar para tu llamada",
+                          )
+                        : say(
+                            "Don’t have a place in mind?",
+                            "¿Aún no sabes a qué lugar llamar?",
+                          )}
+                    </h3>
+                    <p>
+                      {chosenBusiness
+                        ? chosenBusiness.name
+                        : say(
+                            "See nearby places on the map, or search in another area.",
+                            "Te mostramos lugares cercanos en el mapa. También puedes buscar en otra zona.",
+                          )}
+                    </p>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={() => setFinderOpen(true)}
+                    >
+                      <Search size={16} />
+                      {chosenBusiness
+                        ? say("Choose another place", "Elegir otro lugar")
+                        : plan.category === "dentist"
+                          ? say("Find a dentist", "Buscar un dentista")
+                          : say(
+                              "Help me find a place",
+                              "Ayúdame a encontrar un lugar",
+                            )}
+                    </button>
+                  </div>
+                </div>
+              )}
             {step === 1 && (
               <>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => setFinderOpen(true)}
+                >
+                  <MapPin size={17} />
+                  {say(
+                    "Find a place or use a saved contact",
+                    "Buscar un lugar o usar un contacto guardado",
+                  )}
+                </button>
+                {chosenBusiness && (
+                  <div className="chosen-business">
+                    <Check size={18} />
+                    <div>
+                      <strong>{chosenBusiness.name}</strong>
+                      <p>{chosenBusiness.address}</p>
+                      <small>Google Maps</small>
+                    </div>
+                  </div>
+                )}
                 <Field
                   label={
                     plan.purpose === "appointment"
@@ -543,26 +645,14 @@ export default function CallWizard({
                       "Ej. Clínica Dental Central",
                     )}
                     value={plan.business}
-                    onChange={(e) => change("business", e.target.value)}
+                    onChange={(e) => {
+                      change("business", e.target.value);
+                      change("businessAddress", "");
+                      setChosenBusiness(undefined);
+                    }}
                   />
                 </Field>
-                <div className="phone-fields">
-                  <Field label={say("Calling country", "País al que llamamos")}>
-                    <select
-                      value={plan.country}
-                      onChange={(e) => {
-                        change("country", e.target.value as CallingCountry);
-                        change("phone", "");
-                        setPhoneTouched(false);
-                      }}
-                    >
-                      {callingCountries.map((item) => (
-                        <option key={item.code} value={item.code}>
-                          {item.name[l]} ({item.prefix})
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                <div>
                   <Field label={t.phone}>
                     <input
                       ref={phoneInput}
@@ -577,7 +667,11 @@ export default function CallWizard({
                       aria-describedby={
                         phoneError ? "phone-help phone-error" : "phone-help"
                       }
-                      onChange={(e) => change("phone", e.target.value)}
+                      onChange={(e) => {
+                        change("phone", e.target.value);
+                        change("businessAddress", "");
+                        setChosenBusiness(undefined);
+                      }}
                       onBlur={() => {
                         setPhoneTouched(true);
                         if (phone) change("phone", phone.formatNational());
@@ -867,6 +961,7 @@ export default function CallWizard({
                       {country.name[l]} ·{" "}
                       {phone?.formatInternational() || plan.phone}
                     </p>
+                    {plan.businessAddress && <p>{plan.businessAddress}</p>}
                   </div>
                   <span className="review-live">
                     {say("Real call", "Llamada real")}
@@ -1131,6 +1226,24 @@ export default function CallWizard({
           </div>
         </aside>
       </div>
+      {finderOpen && (
+        <BusinessFinder
+          country={plan.country}
+          initialTerm={searchTerm(plan.purpose, plan.category, plan.country)}
+          categoryLabel={
+            plan.purpose === "restaurant"
+              ? say("Restaurants", "Restaurantes")
+              : plan.purpose === "appointment" && plan.category !== "other"
+                ? categoryLabels[l][
+                    plan.category as keyof typeof categoryLabels.en
+                  ] || say("Places", "Lugares")
+                : say("Places for your call", "Lugares para tu llamada")
+          }
+          l={l}
+          onChoose={chooseBusiness}
+          onClose={() => setFinderOpen(false)}
+        />
+      )}
     </>
   );
 }

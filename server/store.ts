@@ -103,3 +103,35 @@ export function pendingControls(): { id: string; control_id: string }[] {
     control_id: string;
   }[];
 }
+
+// Persist only Place IDs, not a cached Google business directory.
+db.exec(
+  "CREATE TABLE IF NOT EXISTS contacts (place_id TEXT PRIMARY KEY, country TEXT NOT NULL, created_at TEXT NOT NULL)",
+);
+export function contacts() {
+  return db
+    .prepare(
+      "SELECT place_id AS placeId, country, created_at AS createdAt FROM contacts ORDER BY created_at DESC",
+    )
+    .all();
+}
+export function saveContact(placeId: string, country: string) {
+  const exists = db
+    .prepare("SELECT place_id FROM contacts WHERE place_id=?")
+    .get(placeId);
+  if (
+    !exists &&
+    Number(db.prepare("SELECT COUNT(*) AS n FROM contacts").get()!.n) >= 100
+  )
+    throw new Error("CONTACT_LIMIT");
+  db.prepare("INSERT OR IGNORE INTO contacts VALUES(?,?,?)").run(
+    placeId,
+    country,
+    new Date().toISOString(),
+  );
+  return contacts();
+}
+export function removeContact(placeId: string) {
+  db.prepare("DELETE FROM contacts WHERE place_id=?").run(placeId);
+  return contacts();
+}

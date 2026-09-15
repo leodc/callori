@@ -27,6 +27,7 @@ const env = {
   TELNYX_PUBLIC_KEY: "",
   PUBLIC_BASE_URL: "",
   ALLOWED_PHONE_NUMBERS: "",
+  GOOGLE_MAPS_BROWSER_KEY: "test-browser-key-not-a-secret",
 };
 const children = [];
 function start() {
@@ -67,6 +68,56 @@ try {
     ).status,
     413,
   );
+  const auth = {
+    Authorization: `Bearer ${env.CALLORI_INTERNAL_TOKEN}`,
+    "Content-Type": "application/json",
+  };
+  assert.equal((await fetch(`${base}/contacts`)).status, 401);
+  assert.equal((await fetch(`${base}/maps-config`)).status, 401);
+  assert.equal(
+    (await (await fetch(`${base}/maps-config`, { headers: auth })).json()).key,
+    env.GOOGLE_MAPS_BROWSER_KEY,
+  );
+  const contact = { placeId: "test_place", country: "JP" };
+  for (let i = 0; i < 2; i++)
+    assert.equal(
+      (
+        await fetch(`${base}/contacts`, {
+          method: "POST",
+          headers: auth,
+          body: JSON.stringify(contact),
+        })
+      ).status,
+      200,
+    );
+  assert.equal(
+    (await (await fetch(`${base}/contacts`, { headers: auth })).json()).length,
+    1,
+  );
+  assert.equal(
+    (
+      await fetch(`${base}/contacts`, {
+        method: "POST",
+        headers: auth,
+        body: JSON.stringify({ ...contact, phone: "+817012345678" }),
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await fetch(`${base}/contacts/remove`, {
+        method: "POST",
+        headers: auth,
+        body: JSON.stringify(contact),
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await (await fetch(`${base}/contacts`, { headers: auth })).json()).length,
+    0,
+  );
   db = new DatabaseSync(join(dir, "callori.sqlite"));
   const seeded = {
     id: "00000000-0000-4000-8000-000000000001",
@@ -106,7 +157,7 @@ try {
   first.kill("SIGTERM");
   assert.equal((await exit)[0], 0);
   console.log(
-    "PASS: health, API/signature guards, body limit, duplicate-start isolation, malformed upgrade and graceful shutdown.",
+    "PASS: health, contacts/config API, API/signature guards, body limit, duplicate-start isolation, malformed upgrade and graceful shutdown.",
   );
 } finally {
   for (const child of children)

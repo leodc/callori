@@ -5,7 +5,7 @@
 | Check                     | Result                                                                                                                  |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | TypeScript                | Passed                                                                                                                  |
-| Automated suite           | 27 tests passed; isolated fixtures and mocked telephone transports                                                      |
+| Automated suite           | 33 tests passed; isolated fixtures and mocked telephone transports                                                      |
 | Optimized Next.js build   | Passed                                                                                                                  |
 | HTTP lifecycle smoke test | Passed on a temporary port/data directory with empty provider credentials                                               |
 | Dependency audit          | Zero reported vulnerabilities at review time                                                                            |
@@ -31,6 +31,8 @@ Local checks ran using Node 25.6.0. The declared baseline and CI target are Node
 The isolated HTTP smoke test separately verifies health, unauthenticated API/signature rejection, oversized-body rejection, malformed WebSocket upgrade handling, graceful shutdown, and that a duplicate server launch cannot alter a seeded active call.
 
 ## Browser and user testing evidence
+
+Business discovery was redesigned and verified on September 16 with real Google tiles, ten restaurant results near Shinjuku Station and desktop/mobile (390×844) screenshots. No browser errors or horizontal overflow were observed. The map uses the request’s known service, prompts once for location, searches automatically when granted and keeps area controls on the map. An isolated fixture verified permission denial/out-of-region fallback, blocked closed/no-phone places, saving/removing references, restoring results across tabs, wizard autofill without dialing, late location callbacks superseded by a manual search, cancellation on close and missing-key messaging. The fixture intercepted contact writes and all call submissions; no real contact data was changed. Cloud restriction settings and live saved-contact detail refresh remain unverified. See [Google Maps](GOOGLE_MAPS.md) for the repeatable browser checks.
 
 The Japan country selector was rechecked after restart on desktop and at 390×844. Only Japan (+81) appeared; `07012345678` formatted as `070-1234-5678` on blur and previewed `+81 70 1234 5678`. A US number showed an inline error and could not advance. Final review preserved the normalized Japan destination. No horizontal overflow or browser errors were observed, and no call was submitted.
 

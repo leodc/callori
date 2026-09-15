@@ -27,7 +27,7 @@ async function proxy(
   const { path } = await params;
   const route = path.join("/");
   if (
-    !/^(state|profile|calls(?:\/[0-9a-f-]{36}(?:\/(answer|cancel))?)?)$/.test(
+    !/^(state|profile|maps-config|contacts(?:\/remove)?|calls(?:\/[0-9a-f-]{36}(?:\/(answer|cancel))?)?)$/.test(
       route,
     )
   )

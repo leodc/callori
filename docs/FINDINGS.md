@@ -31,3 +31,11 @@ Reviewed September 15, 2026. “Fixed” below means implemented and covered by 
 **Operational breadth is limited.** Backups and health checks exist, but no automatic backup schedule, retention/deletion UI, history pagination, tracing or alerts are provided. Call history polling returns full records and should be revisited before long-running/high-volume use.
 
 **Dependencies and providers change.** The audit was clean at review time; this is a dated result. Pin the lockfile, re-run CI/audits, and validate provider/model changes with controlled calls.
+
+## Business discovery follow-up
+
+The wizard now covers finding a business, rather than requiring the user to arrive with a phone number. A country-specific Google search, optional one-time location and ID-only saved contacts connect to the existing call-review flow. An external Google Maps tab cannot return a selected place to Callori; integrated selection therefore needs Maps JavaScript API and Places API (New). Initial project/key setup was deferred. On 2026-09-16 the supplied API key was moved from `GOOGLE_MAPS_MAP_ID` to `GOOGLE_MAPS_BROWSER_KEY`; restarting enabled real tiles and a Places search returning ten results. Fixture checks cover the contact flow; live saved-contact detail refresh and a Cloud restriction audit remain activation tasks.
+
+### Making discovery part of the request
+
+The first map worked technically but repeated the service question and left the user facing an empty map beneath a large form. The revised view uses the known request category, starts nearby discovery after browser location permission, and puts area controls over the map. Numbered pins and a compact place panel connect exploration to the call wizard. Manual area searches supersede late location callbacks; switching between Explore and Saved restores results without another Places search. An unknown/custom service still needs an explicit public search term, so private appointment reasons never become Maps queries.

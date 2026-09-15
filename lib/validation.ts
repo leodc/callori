@@ -39,3 +39,14 @@ export const answerSchema = z
     answer: z.string().trim().min(1).max(2000),
   })
   .strict();
+
+export const contactSchema = z
+  .object({
+    placeId: z
+      .string()
+      .min(1)
+      .max(255)
+      .regex(/^[A-Za-z0-9_-]+$/),
+    country: z.literal("JP"),
+  })
+  .strict();

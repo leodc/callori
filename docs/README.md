@@ -12,4 +12,6 @@ This documentation describes the **MVP production foundation**, reviewed Septemb
 | [VERIFICATION](VERIFICATION.md) | Checks actually performed, evidence and unverified behavior          |
 | [TODO](TODO.md)                 | Prioritized follow-up work with completion criteria                  |
 
+[Google Maps discovery and contacts](GOOGLE_MAPS.md) describes the optional map setup, location permission and saved-place handling.
+
 Runtime configuration and provider credentials live in the local `.env`, never in these documents. `.callori/` contains private runtime data and is excluded from Git. Test fixtures and smoke checks use isolated data; they do not place real calls.
